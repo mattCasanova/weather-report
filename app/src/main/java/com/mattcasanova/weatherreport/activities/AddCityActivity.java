@@ -7,9 +7,14 @@ import android.util.Log;
 import android.widget.SearchView;
 
 import com.mattcasanova.weatherreport.R;
+import com.mattcasanova.weatherreport.listeners.OnTaskResult;
+import com.mattcasanova.weatherreport.models.City;
+import com.mattcasanova.weatherreport.tasks.GetSearchResultTask;
 
-public class AddCityActivity extends AppCompatActivity implements SearchView.OnQueryTextListener{
+import java.util.List;
 
+public class AddCityActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, OnTaskResult{
+    private GetSearchResultTask getSearchResults = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,6 +34,8 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
 
     @Override
     public boolean onQueryTextSubmit(String s) {
+        getSearchResults = new GetSearchResultTask(s, this);
+        getSearchResults.execute();
         return false;
     }
 
@@ -37,4 +44,13 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
         return false;
     }
 
+    @Override
+    public void onSuccess(List<City> cities) {
+
+    }
+
+    @Override
+    public void onError(String errorMessage) {
+
+    }
 }
