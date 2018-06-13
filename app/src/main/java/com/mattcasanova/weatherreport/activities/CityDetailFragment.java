@@ -31,8 +31,10 @@ public class CityDetailFragment extends Fragment {
     public CityDetailFragment() {
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
+    /**
+     *
+     */
+    @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final String CITY_PARAM_KEY = getString(R.string.city_param_key);
 
@@ -54,13 +56,20 @@ public class CityDetailFragment extends Fragment {
         }
     }
 
+    /**
+     *
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.city_detail, container, false);
 
         // Show the dummy content as text in a TextView.
         if (mItem != null) {
-            final TextView tvDetails = rootView.findViewById(R.id.city_detail);
+            TextView tvDetails = rootView.findViewById(R.id.city_detail);
             tvDetails.setText(mItem.details);
         }
 

@@ -28,6 +28,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.mattcasanova.weatherreport.activities.CityListActivity" />
         </activity>
+        <activity android:name=".activities.AddCityActivity"></activity>
     </application>
 
 </manifest>

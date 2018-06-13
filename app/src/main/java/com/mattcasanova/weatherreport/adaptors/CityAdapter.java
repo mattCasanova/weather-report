@@ -22,9 +22,9 @@ import java.util.List;
  * CityAdapter for the CityListActivity RecycleView
  */
 public class CityAdapter extends RecyclerView.Adapter<CityAdapter.CityViewHolder> implements View.OnClickListener{
-    private final CityListActivity             mParentActivity;
-    private final List<DummyContent.DummyItem> mCities;
-    private final boolean                      mIsTwoPane;
+    private CityListActivity             mParentActivity;
+    private List<DummyContent.DummyItem> mCities;
+    private boolean                      mIsTablet;
 
     /**
      * Constructor for the City Adapter
@@ -35,7 +35,7 @@ public class CityAdapter extends RecyclerView.Adapter<CityAdapter.CityViewHolder
     public CityAdapter(CityListActivity parent, List<DummyContent.DummyItem> cities, boolean isTwoPane) {
         mCities         = cities;
         mParentActivity = parent;
-        mIsTwoPane      = isTwoPane;
+        mIsTablet       = isTwoPane;
     }
 
     /**
@@ -84,9 +84,9 @@ public class CityAdapter extends RecyclerView.Adapter<CityAdapter.CityViewHolder
      */
     @Override
     public void onClick(View view) {
-        final String CITY_PARAM_KEY = mParentActivity.getString(R.string.city_param_key);
+        String CITY_PARAM_KEY       = mParentActivity.getString(R.string.city_param_key);
         DummyContent.DummyItem item = (DummyContent.DummyItem) view.getTag();
-        if (mIsTwoPane) {
+        if (mIsTablet) {
             CityDetailFragment fragment = new CityDetailFragment();
             Bundle arguments            = new Bundle();
 
