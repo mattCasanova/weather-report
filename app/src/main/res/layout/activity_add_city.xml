@@ -7,11 +7,15 @@
     tools:context=".activities.AddCityActivity">
 
     <SearchView
+        android:id="@+id/searchBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+
+        android:background="@color/colorPrimary"
+        android:iconifiedByDefault="false"
+        android:orientation="horizontal"
+        android:queryHint="Search Here"
+        android:theme="@style/Base.Widget.AppCompat.SearchView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
