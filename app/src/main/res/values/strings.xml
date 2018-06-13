@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">The Weather Report</string>
     <string name="title_city_detail">City Detail</string>
+
+    <string name="city_param_key">city_param</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.mattcasanova.weatherreport;
+package com.mattcasanova.weatherreport.activities;
 
 import android.app.Activity;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.mattcasanova.weatherreport.R;
 import com.mattcasanova.weatherreport.dummy.DummyContent;
 
 /**
@@ -18,12 +19,6 @@ import com.mattcasanova.weatherreport.dummy.DummyContent;
  * on handsets.
  */
 public class CityDetailFragment extends Fragment {
-    /**
-     * The fragment argument representing the item ID that this fragment
-     * represents.
-     */
-    public static final String ARG_ITEM_ID = "item_id";
-
     /**
      * The dummy content this fragment is presenting.
      */
@@ -39,15 +34,20 @@ public class CityDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final String CITY_PARAM_KEY = getString(R.string.city_param_key);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
+        // Load the dummy content specified by the fragment
+        // arguments. In a real-world scenario, use a Loader
+        // to load content from a content provider.
 
-            Activity activity = this.getActivity();
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
+        Bundle bundleArgs = getArguments();
+
+        if (bundleArgs.containsKey(CITY_PARAM_KEY)) {
+            final String itemId                  = bundleArgs.getString(CITY_PARAM_KEY);
+            mItem                                = DummyContent.ITEM_MAP.get(itemId);
+            Activity activity                    = this.getActivity();
+            CollapsingToolbarLayout appBarLayout = activity.findViewById(R.id.toolbar_layout);
+
             if (appBarLayout != null) {
                 appBarLayout.setTitle(mItem.content);
             }
@@ -55,13 +55,13 @@ public class CityDetailFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.city_detail, container, false);
 
         // Show the dummy content as text in a TextView.
         if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.city_detail)).setText(mItem.details);
+            final TextView tvDetails = rootView.findViewById(R.id.city_detail);
+            tvDetails.setText(mItem.details);
         }
 
         return rootView;

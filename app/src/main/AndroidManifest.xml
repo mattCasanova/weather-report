@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".CityListActivity"
+            android:name=".activities.CityListActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -20,13 +20,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CityDetailActivity"
+            android:name=".activities.CityDetailActivity"
             android:label="@string/title_city_detail"
-            android:parentActivityName=".CityListActivity"
+            android:parentActivityName=".activities.CityListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.mattcasanova.weatherreport.CityListActivity" />
+                android:value="com.mattcasanova.weatherreport.activities.CityListActivity" />
         </activity>
     </application>
 
