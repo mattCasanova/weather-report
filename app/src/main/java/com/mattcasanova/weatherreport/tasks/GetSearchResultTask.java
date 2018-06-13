@@ -52,7 +52,7 @@ public class GetSearchResultTask extends BaseTask{
             return cities;
 
         } catch (MalformedURLException e) {
-            errorString = "Your search string is invalid, please use only letters and numbers"
+            errorString = "Your search string is invalid, please use only letters and numbers";
             cities.clear();
             e.printStackTrace();
         } catch (IOException e) {
