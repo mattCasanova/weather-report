@@ -1,7 +1,5 @@
 package com.mattcasanova.weatherreport.tasks;
 
-import android.os.AsyncTask;
-import android.util.Log;
 
 import com.mattcasanova.weatherreport.listeners.OnTaskResult;
 import com.mattcasanova.weatherreport.models.City;
@@ -40,7 +38,7 @@ public class GetSearchResultTask extends BaseTask{
             BufferedReader reader        = new BufferedReader(new InputStreamReader(stream));
             StringBuilder resultBuilder  = new StringBuilder();
 
-            //Read my results line buy line
+            //Read my results line by line
             String line                 = reader.readLine();
 
             while(line != null) {

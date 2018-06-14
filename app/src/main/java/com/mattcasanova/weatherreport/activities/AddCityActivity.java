@@ -1,5 +1,6 @@
 package com.mattcasanova.weatherreport.activities;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import java.util.List;
 
 public class AddCityActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, OnTaskResult{
     private GetSearchResultTask getSearchResults = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,8 +36,11 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
 
     @Override
     public boolean onQueryTextSubmit(String s) {
-        getSearchResults = new GetSearchResultTask(s, this);
-        getSearchResults.execute();
+        //getSearchResults = new GetSearchResultTask(s, this);
+        //getSearchResults.execute();
+        Intent data = new Intent();
+        setResult(RESULT_OK, data);
+        this.finish();
         return false;
     }
 
