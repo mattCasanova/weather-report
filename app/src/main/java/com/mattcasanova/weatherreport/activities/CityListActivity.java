@@ -1,7 +1,10 @@
 package com.mattcasanova.weatherreport.activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -9,13 +12,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.mattcasanova.weatherreport.R;
+import com.mattcasanova.weatherreport.Utility.Alerts;
 import com.mattcasanova.weatherreport.controllers.MasterController;
 import com.mattcasanova.weatherreport.models.City;
 
@@ -59,7 +62,11 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         // (res/values-w900dp) If this view is present, then the activity should be in two-pane mode.
         isTwoPaned = detailContainer != null;
 
-
+        //We only want to load the saved cities when the app is first opened. If the app already
+        //Has them loaded, no need to get them again.
+        if(cities.size() == 0) {
+            loadSavedCities();
+        }
 
         //Set up my adapter
         cityAdapter = new CityAdapter();
@@ -123,15 +130,30 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
     }
 
     /**
-     * Adds a city the recycler view and updates the adapter
+     * Adds a city the recycler view and updates the adapter, as well as saved the id for later retrieval
      * @param city The new city to add
      */
     @Override
     public void addCity(City city) {
+        addIdToSavedCities(city.id);
         cities.add(city);
         int endPosition = cities.size();
         cityAdapter.notifyItemInserted(endPosition);
 
+        //this.progressBar.setVisibility(View.INVISIBLE);
+
+    }
+
+    /**
+     * Displays an error/Alert message to the user.
+     * @param errorMessage The message to show.
+     */
+    @Override
+    public void displayError(String errorMessage) {
+        //this.progressBar.setVisibility(View.INVISIBLE);
+        String title       = getString(R.string.title_error);
+        String buttonTitle = getString(R.string.button_ok);
+        Alerts.NoOptionAlert(title, errorMessage, buttonTitle, this);
     }
 
     /**
@@ -147,12 +169,78 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
             String ADD_CITY_KEY = getString(R.string.add_city_key);
             City city = (City) data.getSerializableExtra(ADD_CITY_KEY);
             controller.addNewCity(city);
-            Log.d("Task", city.name);
         }
     }
 
     /**
-     * CityAdapter for the CityListActivity RecycleView.  These adapters could be factored out into seperate
+     * This lets us (the controller) check if a city already exists in the cities list
+     * @param newCity The new city to check
+     * @return True if the city exists in the cities array, false otherwise
+     */
+    @Override
+    public boolean doesCityExist(City newCity) {
+        for (City city : cities) {
+            if(city.id.equals(newCity.id))
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * This lets us (the controller) check how many items are in the cities list
+     * @return The number of cities in the cities list
+     */
+    @Override
+    public int getCitiesCount() {
+        return cities.size();
+    }
+
+    /**
+     * Allows the activity to load all of the cities in the shared preferences. The ids are saved as a single
+     * comma separate string, because that is how they will be sent to the API
+     */
+    private void loadSavedCities() {
+        final String SAVED_CITIES     = getString(R.string.city_preference_key);
+        final String CITY_IDS         = getString(R.string.city_ids_key);
+        SharedPreferences preferences = getSharedPreferences(SAVED_CITIES, Context.MODE_PRIVATE);
+
+        String cityIdsString = preferences.getString(CITY_IDS, "");
+
+        controller.loadSavedCities(cityIdsString);
+    }
+
+    /**
+     * Allows the activity to save a single id to the shared preferences.  The ids are saved as a single
+     * comma separate string, because that is how they will be sent to the API
+     * @param id The id to save.
+     */
+    private void addIdToSavedCities(String id) {
+        final String SAVED_CITIES     = getString(R.string.city_preference_key);
+        final String CITY_IDS         = getString(R.string.city_ids_key);
+
+        //Get the strings
+        SharedPreferences preferences = getSharedPreferences(SAVED_CITIES, Context.MODE_PRIVATE);
+        String cityIdsString          = preferences.getString(CITY_IDS, "");
+
+        if (!cityIdsString.equals(""))
+            cityIdsString += ",";
+
+        cityIdsString += id;
+
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(CITY_IDS, cityIdsString);
+        editor.apply();
+    }
+
+
+
+
+
+
+
+    /**
+     * CityAdapter for the CityListActivity RecycleView.  These adapters could be factored out into separate
      * classes but they are often uses exclusively for a specific Activity.  By doing it this way, we don't need
      * to maintain a list in both the view and adapter.
      */
@@ -165,6 +253,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
          * @param viewType We only have one cell type, so we don't need this
          * @return Our newly created CityViewHolder
          */
+        @NonNull
         @Override
         public CityViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());

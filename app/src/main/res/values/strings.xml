@@ -5,12 +5,15 @@
 
     <!-- Keys -->
     <string name="city_param_key">city_param</string>
+    <string name="city_preference_key">saved_cities</string>
+    <string name="city_ids_key">city_ids_key</string>
 
     <!-- Theme Values -->
     <string name="scrolling_view_behavior" >android.support.design.widget.AppBarLayout$ScrollingViewBehavior</string>
     <string name="add_city_key">add_city</string>
     <string name="search_hint">What city are you Looking for?</string>
 
-    <!-- API Values -->
+    <string name="title_error">Error</string>
+    <string name="button_ok">OK</string>
 
 </resources>

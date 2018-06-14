@@ -1,5 +1,6 @@
 package com.mattcasanova.weatherreport.controllers;
 
+import android.content.SharedPreferences;
 import android.view.View;
 
 import com.mattcasanova.weatherreport.R;
@@ -15,6 +16,10 @@ import java.util.List;
  * from cluttering up the views.
  */
 public class MasterController implements OnTaskResult {
+    private static final String ADD_CITY_ERROR = "Due to limitations on how many API requests can be made in a given time frame, the number of cities on the dashboard has been limited.";
+
+    private static final int MAX_CITIES = 5;
+
     private MasterViewInterface view;
 
     /**
@@ -36,6 +41,11 @@ public class MasterController implements OnTaskResult {
      * @param button The view that was clicked
      */
     public void onButtonClicked(View button) {
+        if (view.getCitiesCount() == MAX_CITIES) {
+           view.displayError(ADD_CITY_ERROR);
+           return;
+        }
+
         if (button.getId() == R.id.fab_add_city) {
             view.goToAddCity();
         }
@@ -48,9 +58,14 @@ public class MasterController implements OnTaskResult {
      * @param city The city to add
      */
     public void addNewCity(City city) {
-        if (city != null) {
-            this.view.addCity(city);
-        }
+        if (city == null || view.doesCityExist(city))
+            return;
+
+        this.view.addCity(city);
+    }
+
+    public void loadSavedCities(String cityIdsString) {
+
     }
 
     @Override

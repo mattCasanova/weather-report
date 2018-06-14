@@ -9,4 +9,8 @@ public interface MasterViewInterface {
     void goToAddCity();
     void loadCities(List<City> cities);
     void addCity(City city);
+    void displayError(String errorMessage);
+
+    boolean doesCityExist(City newCity);
+    int getCitiesCount();
 }

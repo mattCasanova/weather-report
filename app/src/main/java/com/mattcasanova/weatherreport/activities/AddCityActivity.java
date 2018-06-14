@@ -108,10 +108,16 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
 
     }
 
+    /**
+     * Displays an error/Alert message to the user.
+     * @param errorMessage The message to show.
+     */
     @Override
     public void displayError(String errorMessage) {
         this.progressBar.setVisibility(View.INVISIBLE);
-        Alerts.NoOptionAlert("Error", errorMessage, "OK", this);
+        String title       = getString(R.string.title_error);
+        String buttonTitle = getString(R.string.button_ok);
+        Alerts.NoOptionAlert(title, errorMessage, buttonTitle, this);
     }
 
     /**
