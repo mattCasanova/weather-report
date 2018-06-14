@@ -4,6 +4,10 @@ package com.mattcasanova.weatherreport.tasks;
 import com.mattcasanova.weatherreport.listeners.OnTaskResult;
 import com.mattcasanova.weatherreport.models.City;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,17 +50,38 @@ public class GetSearchResultTask extends BaseTask{
                 line = reader.readLine();
             }
 
+            JSONObject root = new JSONObject(resultBuilder.toString());
+            if (root.has("cod")) {
+                int code = root.getInt("cod");
+                if (code != 200) {
+                    return cities;
+                }
+            }
+            int count = root.getInt("count");
+
+            JSONArray jsonList = root.getJSONArray("list");
+
+            for(int i = 0; i < count; ++i) {
+                JSONObject jsonCity = jsonList.getJSONObject(i);
+
+                City city = new City(jsonCity);
+                cities.add(city);
+            }
 
             return cities;
 
         } catch (MalformedURLException e) {
             errorString = "Your search string is invalid, please use only letters and numbers";
-            cities.clear();
             e.printStackTrace();
         } catch (IOException e) {
-            cities.clear();
+            errorString = "There was a problem reading the weather data.  Please try again.";
+            e.printStackTrace();
+        } catch (JSONException e) {
+            errorString = "The Data returned   Please try again.";
             e.printStackTrace();
         }
+
+        cities.clear();
         return cities;
     }
 
@@ -64,8 +89,15 @@ public class GetSearchResultTask extends BaseTask{
     protected void onPostExecute(List<City> cities) {
         super.onPostExecute(cities);
 
-
-        listener.onSuccess(cities);
+        if(!errorString.isEmpty()) {
+            listener.onError(errorString);
+        }
+        else if (cities.isEmpty()) {
+            listener.onError("No Search results could be found");
+        }
+        else {
+            listener.onSuccess(cities);
+        }
 
     }
 }

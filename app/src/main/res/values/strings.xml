@@ -8,6 +8,8 @@
 
     <!-- Theme Values -->
     <string name="scrolling_view_behavior" >android.support.design.widget.AppBarLayout$ScrollingViewBehavior</string>
+    <string name="add_city_key">add_city</string>
+    <string name="search_hint">What city are you Looking for?</string>
 
     <!-- API Values -->
 

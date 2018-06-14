@@ -4,9 +4,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,11 +30,10 @@ import java.util.List;
  * item details side-by-side using two vertical panes.
  */
 public class CityListActivity extends AppCompatActivity implements MasterViewInterface,  View.OnClickListener {
-    private boolean              isTwoPaned;
-    private List<City>           cities;
-    private MasterController     controller;
-    private FloatingActionButton fabAddCity;
-    private RecyclerView         recyclerView;
+    private boolean          isTwoPaned;
+    private List<City>       cities;
+    private MasterController controller;
+    private CityAdapter      cityAdapter;
 
 
     @Override
@@ -41,10 +42,10 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         setContentView(R.layout.activity_city_list);
 
         //Get References to my views
-        Toolbar toolbar      = findViewById(R.id.toolbar);
-        View detailContainer = findViewById(R.id.city_detail_container);
-        recyclerView         = findViewById(R.id.city_list);
-        fabAddCity           = findViewById(R.id.fab_add_city);
+        Toolbar toolbar                 = findViewById(R.id.toolbar);
+        View detailContainer            = findViewById(R.id.city_detail_container);
+        RecyclerView recyclerView       = findViewById(R.id.city_list);
+        FloatingActionButton fabAddCity = findViewById(R.id.fab_add_city);
 
         //Set up my action bar and toolbar details
         setSupportActionBar(toolbar);
@@ -60,8 +61,9 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         cities = new ArrayList<>();
 
         //Set up my adapter
-        CityAdapter adapter = new CityAdapter();
-        recyclerView.setAdapter(adapter);
+        cityAdapter = new CityAdapter();
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(cityAdapter);
 
         controller = new MasterController(this);
     }
@@ -96,17 +98,51 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         }
     }
 
+    /**
+     * Starts the AddCity Activity and waits for the result
+     */
     @Override
     public void goToAddCity() {
         Intent intent = new Intent(this, AddCityActivity.class);
         startActivityForResult(intent, getResources().getInteger(R.integer.add_request));
-        startActivity(intent);
     }
 
+    /**
+     * Loads a fresh set of cities in the recycle view
+     * @param cities The new cities to load
+     */
+    @Override
+    public void loadCities(List<City> cities) {
+        this.cities.clear();
+        this.cities.addAll(cities);
+        this.cityAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * Adds a city the recycler view and updates the adapter
+     * @param city The new city to add
+     */
+    @Override
+    public void addCity(City city) {
+        cities.add(city);
+        int endPosition = cities.size();
+        cityAdapter.notifyItemInserted(endPosition);
+
+    }
+
+    /**
+     * Gets the result of the Activity
+     *
+     * @param requestCode  The request code that started the activity
+     * @param resultCode The Result of the activity
+     * @param data The data passed back from the activity
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == getResources().getInteger(R.integer.add_request) && resultCode == RESULT_OK) {
-
+        if (requestCode == getResources().getInteger(R.integer.add_request) && resultCode == RESULT_OK && data != null) {
+            String ADD_CITY_KEY = getString(R.string.add_city_key);
+            City city = (City) data.getSerializableExtra(ADD_CITY_KEY);
+            controller.addNewCity(city);
         }
     }
 
@@ -142,8 +178,6 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
             City city = cities.get(position);
             holder.tvID.setText(city.id);
             holder.tvContent.setText(city.name);
-
-            //holder.itemView.setTag(city);
         }
 
         /**
@@ -176,7 +210,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
 
             /**
              * We let he view hold respond because it knows its position in the list
-             * @param view
+             * @param view The view that was clicked.  We don't need it
              */
             @Override
             public void onClick(View view) {
