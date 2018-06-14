@@ -78,13 +78,12 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
 
         //We only want to load the saved cities when the app is first opened. If the app already
         //Has them loaded, no need to get them again.
+
+        progressBar.setVisibility(View.INVISIBLE);
         if(cities.size() == 0) {
-            progressBar.setVisibility(View.VISIBLE);
             loadSavedCities();
         }
-        else {
-            progressBar.setVisibility(View.INVISIBLE);
-        }
+
     }
 
     /**
@@ -215,7 +214,10 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
 
         String cityIdsString = preferences.getString(CITY_IDS, "");
 
-        controller.loadSavedCities(cityIdsString);
+        if(!cityIdsString.equals("")) {
+            progressBar.setVisibility(View.VISIBLE);
+            controller.loadSavedCities(cityIdsString);
+        }
     }
 
     /**

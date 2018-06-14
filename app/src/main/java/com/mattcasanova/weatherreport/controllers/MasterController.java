@@ -68,7 +68,7 @@ public class MasterController implements OnTaskResult {
     }
 
     public void loadSavedCities(String cityIdsString) {
-        if (loadCitiesTask != null) {
+        if (loadCitiesTask != nullgit ) {
             return;
         }
 
