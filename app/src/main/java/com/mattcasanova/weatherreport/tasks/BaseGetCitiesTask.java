@@ -36,11 +36,11 @@ abstract class BaseGetCitiesTask extends AsyncTask<Void, String, List<City> > {
     private static final String COUNT         = "count";
     private static final String LIST          = "list";
 
-    private static final String URL_ERROR     = "Your search string is invalid, please use only letters and numbers";
+    private static final String URL_ERROR     = "There was an error parsing the URL. Please contact support: mcass99@gmail.com";
     private static final String IO_ERROR      = "There was a problem with the connection.  Please try again.";
-    private static final String JSON_ERROR    = "The data returned couldn't be read properly.  Please try again.";
+    private static final String JSON_ERROR    = "The parsing the JSON. Please contact support: mcass99@gmail.com";
 
-    static final String SEARCH_ALERT          = "No city data could be found.  Try another search";
+    static final String SEARCH_ALERT          = "No city data could be found.  Please try another search.";
 
 
 

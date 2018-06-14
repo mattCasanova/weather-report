@@ -33,6 +33,10 @@ public class AddController implements OnTaskResult {
 
     }
 
+    public void onListItemClicked(City city) {
+        view.onCityItemSelected(city);
+    }
+
     /**
      * Success responder for the search
      * @param cities The city results from the search

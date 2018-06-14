@@ -17,6 +17,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.mattcasanova.weatherreport.R;
+import com.mattcasanova.weatherreport.Utility.Alerts;
 import com.mattcasanova.weatherreport.controllers.AddController;
 import com.mattcasanova.weatherreport.dummy.DummyContent;
 import com.mattcasanova.weatherreport.listeners.OnTaskResult;
@@ -84,6 +85,18 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
      */
     @Override public boolean onQueryTextChange(String s) { return false; }
 
+    /**
+     * The Action to take when a city is clicked
+     * @param city The city that was selected
+     */
+    @Override
+    public void onCityItemSelected(City city) {
+        Intent returnData = new Intent();
+        String ADD_CITY_KEY = getString(R.string.add_city_key);
+        returnData.putExtra(ADD_CITY_KEY, city);
+        setResult(RESULT_OK, returnData);
+        finish();
+    }
 
     @Override
     public void loadCities(List<City> cities) {
@@ -98,6 +111,7 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
     @Override
     public void displayError(String errorMessage) {
         this.progressBar.setVisibility(View.INVISIBLE);
+        Alerts.NoOptionAlert("Error", errorMessage, "OK", this);
     }
 
     /**
@@ -120,7 +134,7 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
         public NameViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             View nameListItem       = inflater.inflate(R.layout.name_list_content, parent, false);
-            return  new NameViewHolder(nameListItem, parent);
+            return  new NameViewHolder(nameListItem);
         }
 
         /**
@@ -150,16 +164,18 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
          */
         class NameViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
             TextView tvName;
+            ViewGroup parent;
 
             /**
              * We pass in the ViewGroup parent so we can allow the view holder to respond to its own click
              *
              * @param view The View of this cell layout
-             * @param parent The parent view of this cell
              */
-            NameViewHolder(View view, ViewGroup parent) {
+            NameViewHolder(View view) {
                 super(view);
                 tvName = view.findViewById(R.id.city_name);
+
+                parent = view.findViewById(R.id.root) ;
                 parent.setOnClickListener(this);
             }
 
@@ -169,7 +185,9 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
              */
             @Override
             public void onClick(View view) {
-
+                //The view holder knows its own position in the list
+                City clickedCity = cities.get(getAdapterPosition());
+                controller.onListItemClicked(clickedCity);
             }
         }
 

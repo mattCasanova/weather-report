@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -31,7 +32,7 @@ import java.util.List;
  */
 public class CityListActivity extends AppCompatActivity implements MasterViewInterface,  View.OnClickListener {
     private boolean          isTwoPaned;
-    private List<City>       cities;
+    private List<City>       cities = new ArrayList<>();
     private MasterController controller;
     private CityAdapter      cityAdapter;
 
@@ -58,10 +59,13 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         // (res/values-w900dp) If this view is present, then the activity should be in two-pane mode.
         isTwoPaned = detailContainer != null;
 
-        cities = new ArrayList<>();
+
 
         //Set up my adapter
         cityAdapter = new CityAdapter();
+        RecyclerView.ItemDecoration decoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
+
+        recyclerView.addItemDecoration(decoration);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(cityAdapter);
 
@@ -143,6 +147,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
             String ADD_CITY_KEY = getString(R.string.add_city_key);
             City city = (City) data.getSerializableExtra(ADD_CITY_KEY);
             controller.addNewCity(city);
+            Log.d("Task", city.name);
         }
     }
 
