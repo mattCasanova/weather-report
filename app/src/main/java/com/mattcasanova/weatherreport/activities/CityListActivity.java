@@ -15,6 +15,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.mattcasanova.weatherreport.R;
@@ -38,6 +39,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
     private List<City>       cities = new ArrayList<>();
     private MasterController controller;
     private CityAdapter      cityAdapter;
+    private ProgressBar      progressBar;
 
 
     @Override
@@ -50,6 +52,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         View detailContainer            = findViewById(R.id.city_detail_container);
         RecyclerView recyclerView       = findViewById(R.id.city_list);
         FloatingActionButton fabAddCity = findViewById(R.id.fab_add_city);
+        progressBar                     = findViewById(R.id.progress_bar);
 
         //Set up my action bar and toolbar details
         setSupportActionBar(toolbar);
@@ -62,11 +65,6 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         // (res/values-w900dp) If this view is present, then the activity should be in two-pane mode.
         isTwoPaned = detailContainer != null;
 
-        //We only want to load the saved cities when the app is first opened. If the app already
-        //Has them loaded, no need to get them again.
-        if(cities.size() == 0) {
-            loadSavedCities();
-        }
 
         //Set up my adapter
         cityAdapter = new CityAdapter();
@@ -77,6 +75,16 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         recyclerView.setAdapter(cityAdapter);
 
         controller = new MasterController(this);
+
+        //We only want to load the saved cities when the app is first opened. If the app already
+        //Has them loaded, no need to get them again.
+        if(cities.size() == 0) {
+            progressBar.setVisibility(View.VISIBLE);
+            loadSavedCities();
+        }
+        else {
+            progressBar.setVisibility(View.INVISIBLE);
+        }
     }
 
     /**
@@ -127,6 +135,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         this.cities.clear();
         this.cities.addAll(cities);
         this.cityAdapter.notifyDataSetChanged();
+        this.progressBar.setVisibility(View.INVISIBLE);
     }
 
     /**
@@ -140,7 +149,6 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         int endPosition = cities.size();
         cityAdapter.notifyItemInserted(endPosition);
 
-        //this.progressBar.setVisibility(View.INVISIBLE);
 
     }
 
@@ -150,7 +158,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
      */
     @Override
     public void displayError(String errorMessage) {
-        //this.progressBar.setVisibility(View.INVISIBLE);
+        this.progressBar.setVisibility(View.INVISIBLE);
         String title       = getString(R.string.title_error);
         String buttonTitle = getString(R.string.button_ok);
         Alerts.NoOptionAlert(title, errorMessage, buttonTitle, this);

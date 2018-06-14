@@ -29,11 +29,13 @@ abstract class BaseGetCitiesTask extends AsyncTask<Void, String, List<City> > {
     static final String API_SUFFIX            = "&units=imperial&APPID=ffbf145fadb301907b1b8f356e6b91bc";
     static final String SEARCH_PREFIX         = "find?q=";
     static final String SEARCH_SUFFIX         = "&type=like";
+    static final String LOAD_GROUP_PREFIX     = "group?id=";
 
     //JSON CONSTANTS
     private static final int    CODE_GOOD     = 200;
     private static final String RESULT_CODE   = "cod";
     private static final String COUNT         = "count";
+    private static final String CNT           = "cnt";
     private static final String LIST          = "list";
 
     private static final String URL_ERROR     = "There was an error parsing the URL. Please contact support: mcass99@gmail.com";
@@ -85,8 +87,17 @@ abstract class BaseGetCitiesTask extends AsyncTask<Void, String, List<City> > {
                 return cities;
             }
 
-            //Then get our result list and count
-            int count          = root.getInt(COUNT);
+            int count = 0;
+
+            //Depending on if we are loading a group or searching, the count key is spelled
+            //Differently, this seems to be only difference, so we we keep this in the base class,
+            //If the differences become too complex we can move it into the derived classes
+            if(root.has(COUNT))
+                count = root.getInt(COUNT);
+            else if (root.has(CNT))
+                count = root.getInt(CNT);
+
+            //Then get our result list
             JSONArray jsonList = root.getJSONArray(LIST);
 
             //Get each json city and let the city object handle the parsing

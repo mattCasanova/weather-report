@@ -7,6 +7,7 @@ import com.mattcasanova.weatherreport.R;
 import com.mattcasanova.weatherreport.activities.MasterViewInterface;
 import com.mattcasanova.weatherreport.listeners.OnTaskResult;
 import com.mattcasanova.weatherreport.models.City;
+import com.mattcasanova.weatherreport.tasks.LoadCityIdsTask;
 
 import java.util.List;
 
@@ -19,6 +20,8 @@ public class MasterController implements OnTaskResult {
     private static final String ADD_CITY_ERROR = "Due to limitations on how many API requests can be made in a given time frame, the number of cities on the dashboard has been limited.";
 
     private static final int MAX_CITIES = 5;
+
+    private LoadCityIdsTask loadCitiesTask = null;
 
     private MasterViewInterface view;
 
@@ -41,7 +44,7 @@ public class MasterController implements OnTaskResult {
      * @param button The view that was clicked
      */
     public void onButtonClicked(View button) {
-        if (view.getCitiesCount() == MAX_CITIES) {
+        if (view.getCitiesCount() >= MAX_CITIES) {
            view.displayError(ADD_CITY_ERROR);
            return;
         }
@@ -65,16 +68,24 @@ public class MasterController implements OnTaskResult {
     }
 
     public void loadSavedCities(String cityIdsString) {
+        if (loadCitiesTask != null) {
+            return;
+        }
 
+        loadCitiesTask = new LoadCityIdsTask(cityIdsString, this);
+        loadCitiesTask.execute();
     }
 
     @Override
     public void onSuccess(List<City> cities) {
-
+        loadCitiesTask = null;
+        view.loadCities(cities);
     }
 
     @Override
     public void onError(String errorMessage) {
+        loadCitiesTask = null;
+        view.displayError(errorMessage);
 
     }
 }
