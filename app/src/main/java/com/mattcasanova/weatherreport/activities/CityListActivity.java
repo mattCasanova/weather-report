@@ -45,11 +45,13 @@ import java.util.List;
  * item details side-by-side using two vertical panes.
  */
 public class CityListActivity extends AppCompatActivity implements MasterViewInterface,  View.OnClickListener {
-    private boolean          isTwoPaned;
-    private List<City>       cities = new ArrayList<>();
-    private MasterController controller;
-    private CityAdapter      cityAdapter;
-    private ProgressBar      progressBar;
+    private boolean            isTwoPaned;
+    private List<City>         cities = new ArrayList<>();
+    private MasterController   controller;
+    private CityAdapter        cityAdapter;
+    private ProgressBar        progressBar;
+    private CityDetailFragment fragment = null;
+    private int                fragPosition;
 
 
     @Override
@@ -111,18 +113,21 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
     }
 
     @Override
-    public void goToDetail(City city) {
+    public void goToDetail(City city, int position) {
         String CITY_PARAM_KEY = getString(R.string.city_param_key);
 
         if (isTwoPaned) {
-            CityDetailFragment fragment = new CityDetailFragment();
-            Bundle arguments            = new Bundle();
+            fragment          = new CityDetailFragment();
+            fragPosition      = position;
+            Bundle arguments  = new Bundle();
 
-            arguments.putString(CITY_PARAM_KEY, city.getId());
+            arguments.putSerializable(CITY_PARAM_KEY, city);
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.city_detail_container, fragment)
                     .commit();
+
+
         } else {
             Intent intent   = new Intent(this, CityDetailActivity.class);
             intent.putExtra(CITY_PARAM_KEY, city);
@@ -172,6 +177,15 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         deleteIdFromSavedCities(cities.get(position).getId());
         cities.remove(position);
         cityAdapter.notifyItemRemoved(position);
+
+        if(fragPosition == position) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .remove(fragment)
+                    .commit();
+            fragment = null;
+        }
+
     }
 
     @Override
@@ -278,27 +292,35 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         String cityIdsString          = preferences.getString(CITY_IDS, "");
 
 
-        //Split the string into separate values so we can iterate
-        ArrayList<String> ids = new ArrayList<>(Arrays.asList(cityIdsString.split(",")));
-        ids.add(position, id);
+        if (cityIdsString.equals("")) {
+            cityIdsString = id;
+        }
+        else {
+            //Split the string into separate values so we can iterate
+            ArrayList<String> ids = new ArrayList<>(Arrays.asList(cityIdsString.split(",")));
+            ids.add(position, id);
 
+            int size = ids.size();
 
+            // Add the first item
+            StringBuilder builder = new StringBuilder();
+            if (size != 0) {
+                builder.append(ids.get(0));
+            }
 
-        int size = ids.size();
+            //Now add the rest, if they exist
+            for (int i = 1; i < size; ++i) {
+                builder.append(",").append(ids.get(i));
+            }
 
-        // Add the first item
-        StringBuilder builder = new StringBuilder();
-        if (size != 0) {
-            builder.append(ids.get(0));
+            cityIdsString = builder.toString();
         }
 
-        //Now add the rest, if they exist
-        for (int i = 1; i < size; ++i) {
-            builder.append(",").append(ids.get(i));
-        }
+
+
 
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(CITY_IDS, builder.toString());
+        editor.putString(CITY_IDS, cityIdsString);
         editor.apply();
     }
 
@@ -434,8 +456,9 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
             @Override
             public void onClick(View view) {
                 //The view holder knows its own position in the list
-                City clickedCity = cities.get(getAdapterPosition());
-                controller.onListItemClicked(clickedCity);
+                int position     = getAdapterPosition();
+                City clickedCity = cities.get(position);
+                controller.onListItemClicked(clickedCity, position);
             }
         }
     }

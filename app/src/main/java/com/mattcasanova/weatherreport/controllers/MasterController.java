@@ -33,8 +33,8 @@ public class MasterController implements OnTaskResult {
         this.view = view;
     }
 
-    public void onListItemClicked(City city) {
-        view.goToDetail(city);
+    public void onListItemClicked(City city, int position) {
+        view.goToDetail(city, position);
     }
 
     /**
