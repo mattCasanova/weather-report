@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="add_request">1111</integer>
+
+    <integer name="fine_permission_request">2222</integer>
 </resources>

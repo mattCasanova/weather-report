@@ -12,15 +12,4 @@ public class LoadCityIdsTask extends BaseGetCitiesTask {
         this.queryString = API_PREFIX + LOAD_GROUP_PREFIX + cityIdsString + API_SUFFIX;
     }
 
-    @Override
-    protected void onPostExecute(List<City> cities) {
-        super.onPostExecute(cities);
-
-        if(!errorString.isEmpty()) {
-            listener.onError(errorString);
-        }
-        else {
-            listener.onSuccess(cities);
-        }
-    }
 }

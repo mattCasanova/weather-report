@@ -17,6 +17,10 @@
 
     <string name="title_error">Error</string>
     <string name="button_ok">OK</string>
+
+    <string name="error_last_loc">There was an error getting your last location.  Please make sure you are connected to the internet.  Using Bluetooth and GPS helps as well.</string>
+    <string name="error_no_permission_api">You do not have permission to use location services on this device.</string>
+
     <string name="max_temperature">Max Temperature:</string>
     <string name="min_temperature">Min Temperature:</string>
     <string name="pressure">Pressure:</string>

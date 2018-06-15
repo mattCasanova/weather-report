@@ -51,7 +51,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
     private CityAdapter        cityAdapter;
     private ProgressBar        progressBar;
     private CityDetailFragment fragment = null;
-    private int                fragPosition;
+    private int                fragPosition = -1;
 
 
     @Override
@@ -178,7 +178,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         cities.remove(position);
         cityAdapter.notifyItemRemoved(position);
 
-        if(fragPosition == position) {
+        if(fragment != null && fragPosition == position) {
             getSupportFragmentManager()
                     .beginTransaction()
                     .remove(fragment)

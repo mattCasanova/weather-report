@@ -1,8 +1,12 @@
 package com.mattcasanova.weatherreport.activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -28,33 +33,35 @@ import com.mattcasanova.weatherreport.models.City;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AddCityActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, AddViewInterface, OnSuccessListener<Location> {
+public class AddCityActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, AddViewInterface, OnSuccessListener<Location>, View.OnClickListener {
     private FusedLocationProviderClient locationClient;
     private AddController controller;
-    private List<City>    cities;
-    private NameAdapter   nameAdapter;
-    private ProgressBar   progressBar;
+    private List<City> cities;
+    private NameAdapter nameAdapter;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_city);
 
-        ActionBar actionBar       = getSupportActionBar();
-        SearchView searchBar      = findViewById(R.id.searchBar);
+        ActionBar actionBar = getSupportActionBar();
+        SearchView searchBar = findViewById(R.id.searchBar);
         RecyclerView recyclerView = findViewById(R.id.name_list);
-        progressBar               = findViewById(R.id.progress_bar);
+        Button btnCurrentLoc = findViewById(R.id.current_location);
+        progressBar = findViewById(R.id.progress_bar);
 
-        if(actionBar != null) {
+        if (actionBar != null) {
             String addTitle = getString(R.string.title_add_city);
             actionBar.setTitle(addTitle);
         }
 
+        btnCurrentLoc.setOnClickListener(this);
 
         cities = new ArrayList<>();
 
         //Set up my adapter
-        nameAdapter                            = new NameAdapter();
+        nameAdapter = new NameAdapter();
         RecyclerView.ItemDecoration decoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
 
         recyclerView.addItemDecoration(decoration);
@@ -85,9 +92,12 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
      * wait for submit
      *
      * @param s The string
-     * @return  If this handles the message
+     * @return If this handles the message
      */
-    @Override public boolean onQueryTextChange(String s) { return false; }
+    @Override
+    public boolean onQueryTextChange(String s) {
+        return false;
+    }
 
     /**
      * The Action to take when a city is clicked
@@ -120,23 +130,76 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
     public void displayError(String errorMessage) {
         this.cities.clear();
         this.progressBar.setVisibility(View.GONE);
-        String title       = getString(R.string.title_error);
+        String title = getString(R.string.title_error);
         String buttonTitle = getString(R.string.button_ok);
         Alerts.NoOptionAlert(title, errorMessage, buttonTitle, this);
     }
 
     /**
      * On Success of getting the last known location
-     * @param location The last known location of the d
+     * @param loc The last known location of the d
      */
     @Override
-    public void onSuccess(Location location) {
-        if(location != null) {
-            double longitude = location.getLongitude();
-            double latitude  = location.getLatitude();
+    public void onSuccess(Location loc) {
+        if (loc != null) {
+            controller.getLocation(loc.getLatitude(), loc.getLongitude());
 
-            Log.d("Location", String.format("onSuccess: %f %f", longitude, latitude));
         }
+        else {
+            String title       = getString(R.string.title_error);
+            String message     = getString(R.string.error_last_loc);
+            String buttonTitle = getString(R.string.button_ok);
+            Alerts.NoOptionAlert(title, message, buttonTitle, this);
+        }
+    }
+
+    /**
+     * Method to respond to buttons clicks in this activity
+     * @param view The view that was clicked
+     */
+    @Override
+    public void onClick(View view) {
+        getLastLocation();
+    }
+
+    /**
+     * Checks the results of our premission request
+     * @param requestCode The request code we send
+     * @param permissions The list of permissions we requested
+     * @param grantResults The list of results
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if(requestCode != getResources().getInteger(R.integer.fine_permission_request))
+            return;
+
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            getLastLocation();
+        }
+
+    }
+
+    /**
+     * Method to check permission and get last location from location services
+     *
+     */
+    private void getLastLocation() {
+        //Check permissions to get access to location services
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //We can only request permissions if we have the right API level
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, getResources().getInteger(R.integer.fine_permission_request));
+            } else {
+                String title       = getString(R.string.title_error);
+                String message     = getString(R.string.error_no_permission_api);
+                String buttonTitle = getString(R.string.button_ok);
+                Alerts.NoOptionAlert(title, message, buttonTitle, this);
+            }
+            return;
+        }
+        locationClient.getLastLocation().addOnSuccessListener(this);
     }
 
     /**

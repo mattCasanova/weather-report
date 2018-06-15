@@ -30,17 +30,18 @@ abstract class BaseGetCitiesTask extends AsyncTask<Void, String, List<City> > {
     static final String SEARCH_PREFIX         = "find?q=";
     static final String SEARCH_SUFFIX         = "&type=like";
     static final String LOAD_GROUP_PREFIX     = "group?id=";
+    static final String LAT_LONG_PREFIX       = "weather?";
 
     //JSON CONSTANTS
-    private static final int    CODE_GOOD     = 200;
-    private static final String RESULT_CODE   = "cod";
-    private static final String COUNT         = "count";
-    private static final String CNT           = "cnt";
-    private static final String LIST          = "list";
+    static final int    CODE_GOOD             = 200;
+    static final String RESULT_CODE           = "cod";
+    static final String COUNT                 = "count";
+    static final String CNT                   = "cnt";
+    static final String LIST                  = "list";
 
-    private static final String URL_ERROR     = "There was an error parsing the URL. Please contact support: mcass99@gmail.com";
-    private static final String IO_ERROR      = "There was a problem with the connection.  Please try again.";
-    private static final String JSON_ERROR    = "The parsing the JSON. Please contact support: mcass99@gmail.com";
+    static final String URL_ERROR             = "There was an error parsing the URL. Please contact support: mcass99@gmail.com";
+    static final String IO_ERROR              = "There was a problem with the connection.  Please try again.";
+    static final String JSON_ERROR            = "The parsing the JSON. Please contact support: mcass99@gmail.com";
 
     static final String SEARCH_ALERT          = "No city data could be found.  Please try another search.";
 
@@ -121,6 +122,18 @@ abstract class BaseGetCitiesTask extends AsyncTask<Void, String, List<City> > {
 
         cities.clear();
         return cities;
+    }
+
+    @Override
+    protected void onPostExecute(List<City> cities) {
+        super.onPostExecute(cities);
+
+        if(!errorString.isEmpty()) {
+            listener.onError(errorString);
+        }
+        else {
+            listener.onSuccess(cities);
+        }
     }
 
 

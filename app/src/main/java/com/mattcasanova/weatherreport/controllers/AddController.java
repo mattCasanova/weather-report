@@ -3,13 +3,15 @@ package com.mattcasanova.weatherreport.controllers;
 import com.mattcasanova.weatherreport.activities.AddViewInterface;
 import com.mattcasanova.weatherreport.listeners.OnTaskResult;
 import com.mattcasanova.weatherreport.models.City;
+import com.mattcasanova.weatherreport.tasks.GetLocationResultTask;
 import com.mattcasanova.weatherreport.tasks.GetSearchResultTask;
 
 import java.util.List;
 
 public class AddController implements OnTaskResult {
 
-    private GetSearchResultTask getSearchResult = null;
+    private GetSearchResultTask getSearchTask     = null;
+    private GetLocationResultTask getLocationTask = null;
     private AddViewInterface view;
 
     /**
@@ -25,20 +27,29 @@ public class AddController implements OnTaskResult {
      * @param searchString The string to search for
      */
     public void search(String searchString) {
-        if (getSearchResult != null) {
+        //Only allow one search at a time
+        if (getSearchTask != null || getLocationTask != null) {
             return;
         }
 
-        getSearchResult = new GetSearchResultTask(searchString, this);
-        getSearchResult.execute();
+        getSearchTask = new GetSearchResultTask(searchString, this);
+        getSearchTask.execute();
 
     }
 
     /**
-     *
+     * Get the location from our api
+     * @param lat the latitude to search for
+     * @param lon the longitude to search for
      */
-    public void addCurrentLocation() {
+    public void getLocation(double lat, double lon) {
+        //Only allow one search at a time
+        if (getSearchTask != null || getLocationTask != null) {
+            return;
+        }
 
+        getLocationTask = new GetLocationResultTask(lat, lon, this);
+        getLocationTask.execute();
     }
 
 
@@ -52,7 +63,8 @@ public class AddController implements OnTaskResult {
      */
     @Override
     public void onSuccess(List<City> cities) {
-        getSearchResult = null;
+        getSearchTask = null;
+        getLocationTask = null;
         view.loadCities(cities);
     }
 
@@ -62,7 +74,8 @@ public class AddController implements OnTaskResult {
      */
     @Override
     public void onError(String errorMessage) {
-        getSearchResult = null;
+        getSearchTask = null;
+        getLocationTask = null;
         view.displayError(errorMessage);
     }
 }
