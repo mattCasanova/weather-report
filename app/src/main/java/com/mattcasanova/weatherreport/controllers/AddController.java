@@ -8,6 +8,7 @@ import com.mattcasanova.weatherreport.tasks.GetSearchResultTask;
 import java.util.List;
 
 public class AddController implements OnTaskResult {
+
     private GetSearchResultTask getSearchResult = null;
     private AddViewInterface view;
 
@@ -32,6 +33,14 @@ public class AddController implements OnTaskResult {
         getSearchResult.execute();
 
     }
+
+    /**
+     *
+     */
+    public void addCurrentLocation() {
+
+    }
+
 
     public void onListItemClicked(City city) {
         view.onCityItemSelected(city);
