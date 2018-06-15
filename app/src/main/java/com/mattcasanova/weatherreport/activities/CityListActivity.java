@@ -3,27 +3,37 @@ package com.mattcasanova.weatherreport.activities;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BaseTransientBottomBar;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.mattcasanova.weatherreport.R;
 import com.mattcasanova.weatherreport.Utility.Alerts;
+import com.mattcasanova.weatherreport.Utility.Constants;
 import com.mattcasanova.weatherreport.controllers.MasterController;
 import com.mattcasanova.weatherreport.models.City;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -74,16 +84,20 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(cityAdapter);
 
+        //Set up swipe to delete
+        ItemTouchHelper touchHelper = new ItemTouchHelper(createTouchHelperCallback());
+        touchHelper.attachToRecyclerView(recyclerView);
+
+
         controller = new MasterController(this);
 
         //We only want to load the saved cities when the app is first opened. If the app already
         //Has them loaded, no need to get them again.
 
-        progressBar.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.GONE);
         if(cities.size() == 0) {
             loadSavedCities();
         }
-
     }
 
     /**
@@ -104,14 +118,14 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
             CityDetailFragment fragment = new CityDetailFragment();
             Bundle arguments            = new Bundle();
 
-            arguments.putString(CITY_PARAM_KEY, city.id);
+            arguments.putString(CITY_PARAM_KEY, city.getId());
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.city_detail_container, fragment)
                     .commit();
         } else {
             Intent intent   = new Intent(this, CityDetailActivity.class);
-            intent.putExtra(CITY_PARAM_KEY, city.id);
+            intent.putExtra(CITY_PARAM_KEY, city);
             startActivity(intent);
         }
     }
@@ -134,7 +148,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         this.cities.clear();
         this.cities.addAll(cities);
         this.cityAdapter.notifyDataSetChanged();
-        this.progressBar.setVisibility(View.INVISIBLE);
+        this.progressBar.setVisibility(View.GONE);
     }
 
     /**
@@ -143,12 +157,41 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
      */
     @Override
     public void addCity(City city) {
-        addIdToSavedCities(city.id);
-        cities.add(city);
-        int endPosition = cities.size();
-        cityAdapter.notifyItemInserted(endPosition);
+        addCityAt(city, cities.size());
+    }
 
+    @Override
+    public void addCityAt(City city, int position) {
+        addIdToSavedCities(city.getId(), position);
+        cities.add(position, city);
+        cityAdapter.notifyItemInserted(position);
+    }
 
+    @Override
+    public void deleteCityAt(int position) {
+        deleteIdFromSavedCities(cities.get(position).getId());
+        cities.remove(position);
+        cityAdapter.notifyItemRemoved(position);
+    }
+
+    @Override
+    public void showUndoSnackBar() {
+        Snackbar.make(findViewById(R.id.root), getString(R.string.action_delete_item), Snackbar.LENGTH_LONG)
+                .setAction(R.string.action_undo, new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        controller.undoDeleteCity();
+                    }
+                })
+                .addCallback(new BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                    @Override
+                    public void onDismissed(Snackbar transientBottomBar, int event) {
+                        super.onDismissed(transientBottomBar, event);
+                        controller.onSnackbarTimeout();
+                    }
+                })
+                .show();
     }
 
     /**
@@ -157,7 +200,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
      */
     @Override
     public void displayError(String errorMessage) {
-        this.progressBar.setVisibility(View.INVISIBLE);
+        this.progressBar.setVisibility(View.GONE);
         String title       = getString(R.string.title_error);
         String buttonTitle = getString(R.string.button_ok);
         Alerts.NoOptionAlert(title, errorMessage, buttonTitle, this);
@@ -187,7 +230,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
     @Override
     public boolean doesCityExist(City newCity) {
         for (City city : cities) {
-            if(city.id.equals(newCity.id))
+            if(city.getId().equals(newCity.getId()))
                 return true;
         }
 
@@ -224,22 +267,88 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
      * Allows the activity to save a single id to the shared preferences.  The ids are saved as a single
      * comma separate string, because that is how they will be sent to the API
      * @param id The id to save.
+     * @param position The position to insert
      */
-    private void addIdToSavedCities(String id) {
-        final String SAVED_CITIES     = getString(R.string.city_preference_key);
-        final String CITY_IDS         = getString(R.string.city_ids_key);
+    private void addIdToSavedCities(String id, int position) {
+        String SAVED_CITIES     = getString(R.string.city_preference_key);
+        String CITY_IDS         = getString(R.string.city_ids_key);
 
         //Get the strings
         SharedPreferences preferences = getSharedPreferences(SAVED_CITIES, Context.MODE_PRIVATE);
         String cityIdsString          = preferences.getString(CITY_IDS, "");
 
-        if (!cityIdsString.equals(""))
-            cityIdsString += ",";
 
-        cityIdsString += id;
+        //Split the string into separate values so we can iterate
+        ArrayList<String> ids = new ArrayList<>(Arrays.asList(cityIdsString.split(",")));
+        ids.add(position, id);
+
+
+
+        int size = ids.size();
+
+        // Add the first item
+        StringBuilder builder = new StringBuilder();
+        if (size != 0) {
+            builder.append(ids.get(0));
+        }
+
+        //Now add the rest, if they exist
+        for (int i = 1; i < size; ++i) {
+            builder.append(",").append(ids.get(i));
+        }
 
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(CITY_IDS, cityIdsString);
+        editor.putString(CITY_IDS, builder.toString());
+        editor.apply();
+    }
+
+    /**
+     * Deletes an item from the shared prefs.  It isn't very pretty, but also it won't be called very
+     * much and the list of strings should be pretty small. ~20 or less
+     *
+     * @param idToDelete The id of the item to delete
+     */
+    private void deleteIdFromSavedCities(String idToDelete) {
+        String SAVED_CITIES     = getString(R.string.city_preference_key);
+        String CITY_IDS         = getString(R.string.city_ids_key);
+
+        //Get the strings
+        SharedPreferences preferences = getSharedPreferences(SAVED_CITIES, Context.MODE_PRIVATE);
+        String cityIdsString          = preferences.getString(CITY_IDS, "");
+
+        // If the string is empty, we are done
+        if (cityIdsString.equals(""))
+            return;
+
+
+        //Split the string into separate values so we can iterate
+        ArrayList<String> ids = new ArrayList<>(Arrays.asList(cityIdsString.split(",")));
+        int size = ids.size();
+
+        //Remove the id if it exists
+        for (int i = size - 1; i >= 0; --i) {
+            if (ids.get(i).equals(idToDelete)) {
+                ids.remove(i);
+                break;
+            }
+        }
+
+
+        size = ids.size();
+
+        // Add the first item
+        StringBuilder builder = new StringBuilder();
+        if (size != 0) {
+            builder.append(ids.get(0));
+        }
+
+        //Now add the rest, if they exist
+        for (int i = 1; i < size; ++i) {
+            builder.append(",").append(ids.get(i));
+        }
+
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(CITY_IDS, builder.toString());
         editor.apply();
     }
 
@@ -255,7 +364,6 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
      * to maintain a list in both the view and adapter.
      */
     private class CityAdapter extends RecyclerView.Adapter<CityAdapter.CityViewHolder> {
-
         /**
          * Adapter method to create our ViewHolder
          *
@@ -268,7 +376,7 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         public CityViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             View cityListItem       = inflater.inflate(R.layout.city_list_content, parent, false);
-            return new CityViewHolder(cityListItem, parent);
+            return new CityViewHolder(cityListItem);
         }
 
         /**
@@ -280,8 +388,13 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
         @Override
         public void onBindViewHolder(final CityViewHolder holder, int position) {
             City city = cities.get(position);
-            holder.tvID.setText(city.id);
-            holder.tvContent.setText(city.name);
+            holder.tvName.setText(city.getName());
+            holder.tvTemperature.setText(city.getCurrTemperature());
+
+            String iconName = Constants.ICON_PREFIX + city.getIcon();
+            int resourceId = getResources().getIdentifier(iconName, Constants.DRAWABLE_TYPE, getPackageName());
+
+            holder.imgIcon.setImageDrawable(getDrawable(resourceId));
         }
 
         /**
@@ -296,19 +409,21 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
          * The view holder for the City recycler view
          */
         class CityViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-            TextView tvID;
-            TextView tvContent;
+            TextView  tvName;
+            TextView  tvTemperature;
+            ImageView imgIcon;
 
             /**
              * We pass in the ViewGroup parent so we can allow the view holder to respond to its own click
              *
              * @param view The View of this cell layout
-             * @param parent The parent view of this cell
              */
-            CityViewHolder(View view, ViewGroup parent) {
+            CityViewHolder(View view) {
                 super(view);
-                tvID      = view.findViewById(R.id.id_text);
-                tvContent = view.findViewById(R.id.content);
+                tvName           = view.findViewById(R.id.city_name);
+                tvTemperature    = view.findViewById(R.id.city_temp);
+                imgIcon          = view.findViewById(R.id.weather_icon);
+                ViewGroup parent = view.findViewById(R.id.root);
                 parent.setOnClickListener(this);
             }
 
@@ -324,5 +439,37 @@ public class CityListActivity extends AppCompatActivity implements MasterViewInt
             }
         }
     }
+
+
+    /**
+     * Function to help us create an ItemTouchHelper Callback for our recycler view so we can swipe
+     * to delete.
+     * @return A ItemTouchHelper Callback
+     */
+    private ItemTouchHelper.Callback createTouchHelperCallback() {
+
+        return new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+            //not used, as the first parameter above is 0
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                                  RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+
+            @Override
+            public void onSwiped(final RecyclerView.ViewHolder viewHolder, int swipeDir) {
+                int position = viewHolder.getAdapterPosition();
+                City city    = cities.get(position);
+                controller.onListItemSwiped(city, position);
+            }
+        };
+
+    }
+
+
+
 
 }

@@ -9,6 +9,9 @@ public interface MasterViewInterface {
     void goToAddCity();
     void loadCities(List<City> cities);
     void addCity(City city);
+    void addCityAt(City city, int position);
+    void deleteCityAt(int position);
+    void showUndoSnackBar();
     void displayError(String errorMessage);
 
     boolean doesCityExist(City newCity);

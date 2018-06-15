@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.view.View;
 
 import com.mattcasanova.weatherreport.R;
+import com.mattcasanova.weatherreport.Utility.Constants;
 import com.mattcasanova.weatherreport.activities.MasterViewInterface;
 import com.mattcasanova.weatherreport.listeners.OnTaskResult;
 import com.mattcasanova.weatherreport.models.City;
@@ -17,13 +18,11 @@ import java.util.List;
  * from cluttering up the views.
  */
 public class MasterController implements OnTaskResult {
-    private static final String ADD_CITY_ERROR = "Due to limitations on how many API requests can be made in a given time frame, the number of cities on the dashboard has been limited.";
 
-    private static final int MAX_CITIES = 5;
-
-    private LoadCityIdsTask loadCitiesTask = null;
-
+    private LoadCityIdsTask     loadCitiesTask         = null;
     private MasterViewInterface view;
+    private City                recentlyDeletedCity    = null;
+    private int                 recentlyDeletedCityPos = -1;
 
     /**
      *
@@ -44,8 +43,8 @@ public class MasterController implements OnTaskResult {
      * @param button The view that was clicked
      */
     public void onButtonClicked(View button) {
-        if (view.getCitiesCount() >= MAX_CITIES) {
-           view.displayError(ADD_CITY_ERROR);
+        if (view.getCitiesCount() >= Constants.MAX_CITIES) {
+           view.displayError(Constants.ADD_CITY_ERROR);
            return;
         }
 
@@ -67,6 +66,49 @@ public class MasterController implements OnTaskResult {
         this.view.addCity(city);
     }
 
+    /**
+     * The action to take when an item in the view list is swiped
+     *
+     * @param city The city that was selected
+     * @param position The position that was swiped
+     */
+    public void onListItemSwiped(City city, int position) {
+        //Tell the view to delete the city
+        view.deleteCityAt(position);
+
+        //Save the city in case we need to undo
+        recentlyDeletedCity    = city;
+        recentlyDeletedCityPos = position;
+
+        //Tell view to show undo
+        view.showUndoSnackBar();
+    }
+
+    /**
+     * Allows the controller to undo the most recent delete action
+     */
+    public void undoDeleteCity() {
+        if (recentlyDeletedCity != null) {
+            view.addCityAt(recentlyDeletedCity, recentlyDeletedCityPos);
+
+            recentlyDeletedCity    = null;
+            recentlyDeletedCityPos = -1;
+        }
+    }
+
+    /**
+     * Let contoller be notified when snackbar is done
+     */
+    public void onSnackbarTimeout() {
+        recentlyDeletedCityPos = -1;
+        recentlyDeletedCity    = null;
+    }
+
+    /**
+     * Starts the task to load cities from a given comma separated string
+     *
+     * @param cityIdsString A comma separated string of city ids to load
+     */
     public void loadSavedCities(String cityIdsString) {
         if (loadCitiesTask != null) {
             return;
@@ -76,12 +118,20 @@ public class MasterController implements OnTaskResult {
         loadCitiesTask.execute();
     }
 
+    /**
+     * This handles the success of the the loadCities API call
+     * @param cities The cities that were loaded
+     */
     @Override
     public void onSuccess(List<City> cities) {
         loadCitiesTask = null;
         view.loadCities(cities);
     }
 
+    /**
+     * Handles the error if one occurs while trying to load the cities
+     * @param errorMessage The message to display
+     */
     @Override
     public void onError(String errorMessage) {
         loadCitiesTask = null;

@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
 import com.mattcasanova.weatherreport.R;
+import com.mattcasanova.weatherreport.models.City;
 
 /**
  * An activity representing a single City detail screen. This
@@ -18,7 +19,7 @@ import com.mattcasanova.weatherreport.R;
  * item details are presented side-by-side with a list of items
  * in a {@link CityListActivity}.
  */
-public class CityDetailActivity extends AppCompatActivity implements View.OnClickListener{
+public class CityDetailActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,13 +28,10 @@ public class CityDetailActivity extends AppCompatActivity implements View.OnClic
 
         // Get references to my views
         Toolbar toolbar          = findViewById(R.id.detail_toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
 
         //Set up my action bar
         setSupportActionBar(toolbar);
 
-        //Set the Listener on my fab
-        fab.setOnClickListener(this);
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
@@ -44,13 +42,11 @@ public class CityDetailActivity extends AppCompatActivity implements View.OnClic
         // if we don't have a saved state, Create the detail fragment and add it to the activity
         // using a fragment transaction.
         if (savedInstanceState == null) {
-
-
             String CITY_PARAM_KEY = getString(R.string.city_param_key);
-            String itemId         =  getIntent().getStringExtra(CITY_PARAM_KEY);
+            City city             =  (City) getIntent().getSerializableExtra(CITY_PARAM_KEY);
 
             Bundle arguments      = new Bundle();
-            arguments.putString(CITY_PARAM_KEY, itemId);
+            arguments.putSerializable(CITY_PARAM_KEY, city);
 
             CityDetailFragment fragment = new CityDetailFragment();
             fragment.setArguments(arguments);
@@ -69,11 +65,5 @@ public class CityDetailActivity extends AppCompatActivity implements View.OnClic
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onClick(View view) {
-        Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
     }
 }

@@ -1,6 +1,8 @@
 package com.mattcasanova.weatherreport.models;
 
 
+import com.mattcasanova.weatherreport.Utility.Constants;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,35 +10,16 @@ import org.json.JSONObject;
 import java.io.Serializable;
 
 public class City implements Serializable {
-    private static final String NAME         = "name";
-    private static final String ID           = "id";
-    private static final String COUNTRY_CODE = "country";
-    private static final String HUMIDITY     = "humidity";
-    private static final String PRESSURE     = "pressure";
-    private static final String TEMP         = "temp";
-    private static final String TEMP_MIN     = "temp_min";
-    private static final String TEMP_MAX     = "temp_max";
-    private static final String ICON         = "icon";
-    private static final String DESCRIPTION  = "description";
-    private static final String SYSTEM       = "sys";
-    private static final String MAIN         = "main";
-    private static final String WEATHER      = "weather";
-
-    public String name            = "";
-    public String id              = "";
-    public String countryCode     = "";
-    public String humidity        = "";
-    public String pressure        = "";
-    public String currTemperature = "";
-    public String minTemperature  = "";
-    public String maxTemperature  = "";
-    public String description     = "";
-    public String icon            = "";
-
-    /**
-     * Default constructor
-     */
-    public City() {}
+    private String name;
+    private String id;
+    private String countryCode;
+    private String humidity;
+    private String pressure;
+    private String currTemperature;
+    private String minTemperature;
+    private String maxTemperature;
+    private String description;
+    private String icon;
 
     /**
      * Creates a city from a passed on JSONObject
@@ -45,30 +28,70 @@ public class City implements Serializable {
      */
     public City(JSONObject jsonCity) throws JSONException {
         //Get Top Level Items
-        name               = jsonCity.getString(NAME);
-        id                 = jsonCity.getString(ID);
+        name               = jsonCity.getString(Constants.NAME);
+        id                 = jsonCity.getString(Constants.ID);
 
         //Get my Sys Level Items
-        JSONObject sys     = jsonCity.getJSONObject(SYSTEM);
-        countryCode        = sys.getString(COUNTRY_CODE);
+        JSONObject sys     = jsonCity.getJSONObject(Constants.SYSTEM);
+        countryCode        = sys.getString(Constants.COUNTRY_CODE);
 
         //Get my Main Level items
-        JSONObject main    = jsonCity.getJSONObject(MAIN);
-        humidity           = main.getString(HUMIDITY);
-        pressure           = main.getString(PRESSURE);
-        currTemperature    = main.getString(TEMP);
-        minTemperature     = main.getString(TEMP_MIN);
-        maxTemperature     = main.getString(TEMP_MAX);
+        JSONObject main    = jsonCity.getJSONObject(Constants.MAIN);
+        humidity           = main.getString(Constants.HUMIDITY) + Constants.HUMIDITY_SUFFIX;
+        pressure           = main.getString(Constants.PRESSURE) + Constants.PRESSURE_SUFFIX;
+        currTemperature    = main.getString(Constants.TEMP)     + Constants.FAHRENHEIT_SYMBOL;
+        minTemperature     = main.getString(Constants.TEMP_MIN) + Constants.FAHRENHEIT_SYMBOL;
+        maxTemperature     = main.getString(Constants.TEMP_MAX) + Constants.FAHRENHEIT_SYMBOL;
 
         //Get The Weather Level array/items
-        JSONArray weather = jsonCity.getJSONArray(WEATHER);
+        JSONArray weather = jsonCity.getJSONArray(Constants.WEATHER);
 
         // We could/should grab all of the weather data, but we are just going to grab the
         // First one for this project
         if (weather.length() >= 0 ) {
-            description        = weather.getJSONObject(0).getString(DESCRIPTION);
-            icon               = weather.getJSONObject(0).getString(ICON);
+            description        = weather.getJSONObject(0).getString(Constants.DESCRIPTION);
+            icon               = weather.getJSONObject(0).getString(Constants.ICON);
         }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public String getHumidity() {
+        return humidity;
+    }
+
+    public String getPressure() {
+        return pressure;
+    }
+
+    public String getCurrTemperature() {
+        return currTemperature;
+    }
+
+    public String getMinTemperature() {
+        return minTemperature;
+    }
+
+    public String getMaxTemperature() {
+        return maxTemperature;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getIcon() {
+        return icon;
     }
 
 

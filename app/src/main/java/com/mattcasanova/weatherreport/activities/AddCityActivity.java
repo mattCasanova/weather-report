@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +18,7 @@ import android.widget.TextView;
 import com.mattcasanova.weatherreport.R;
 import com.mattcasanova.weatherreport.Utility.Alerts;
 import com.mattcasanova.weatherreport.controllers.AddController;
-import com.mattcasanova.weatherreport.dummy.DummyContent;
-import com.mattcasanova.weatherreport.listeners.OnTaskResult;
 import com.mattcasanova.weatherreport.models.City;
-import com.mattcasanova.weatherreport.tasks.GetSearchResultTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +55,7 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(nameAdapter);
 
-        progressBar.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.GONE);
         searchBar.setOnQueryTextListener(this);
         controller = new AddController(this);
     }
@@ -104,7 +100,7 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
         this.cities.addAll(cities);
         this.nameAdapter.notifyDataSetChanged();
 
-        this.progressBar.setVisibility(View.INVISIBLE);
+        this.progressBar.setVisibility(View.GONE);
 
     }
 
@@ -114,7 +110,8 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
      */
     @Override
     public void displayError(String errorMessage) {
-        this.progressBar.setVisibility(View.INVISIBLE);
+        this.cities.clear();
+        this.progressBar.setVisibility(View.GONE);
         String title       = getString(R.string.title_error);
         String buttonTitle = getString(R.string.button_ok);
         Alerts.NoOptionAlert(title, errorMessage, buttonTitle, this);
@@ -151,8 +148,8 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
          */
         @Override
         public void onBindViewHolder(@NonNull NameViewHolder holder, int position) {
-            City city = cities.get(position);
-            String name = String.format("%s, %s", city.name, city.countryCode);
+            City city   = cities.get(position);
+            String name = String.format("%s, %s", city.getName(), city.getCountryCode());
             holder.tvName.setText(name);
 
         }
@@ -170,7 +167,6 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
          */
         class NameViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
             TextView tvName;
-            ViewGroup parent;
 
             /**
              * We pass in the ViewGroup parent so we can allow the view holder to respond to its own click
@@ -179,9 +175,8 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
              */
             NameViewHolder(View view) {
                 super(view);
-                tvName = view.findViewById(R.id.city_name);
-
-                parent = view.findViewById(R.id.root) ;
+                tvName           = view.findViewById(R.id.city_name);
+                ViewGroup parent = view.findViewById(R.id.root);
                 parent.setOnClickListener(this);
             }
 

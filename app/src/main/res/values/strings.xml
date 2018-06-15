@@ -3,6 +3,8 @@
     <string name="title_city_detail">City Detail</string>
     <string name="title_add_city">Add City</string>
 
+    <string name="action_delete_item">Item Deleted</string>
+    <string name="action_undo">UNDO?</string>
     <!-- Keys -->
     <string name="city_param_key">city_param</string>
     <string name="city_preference_key">saved_cities</string>
@@ -15,5 +17,11 @@
 
     <string name="title_error">Error</string>
     <string name="button_ok">OK</string>
+    <string name="max_temperature">Max Temperature:</string>
+    <string name="min_temperature">Min Temperature:</string>
+    <string name="pressure">Pressure:</string>
+    <string name="humidity">Humidity:</string>
+    <string name="icon_description">The Weather Icon</string>
+
 
 </resources>
