@@ -37,12 +37,12 @@ public class CityDetailFragment extends Fragment {
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String CITY_PARAM_KEY = getString(R.string.city_param_key);
-        Activity activity              = this.getActivity();
+        Activity activity     = this.getActivity();
         Bundle bundleArgs     = getArguments();
 
-        //If we don't have an activity we are in trouble, It shouldn't happen though
+        // If we don't have an activity we are in trouble.  That means something is wrong and the
+        // App will crash
         if (activity == null) {
-            Alerts.NoOptionAlert("Error", "Message", "ok", this.getContext());
             return;
         }
 
@@ -61,10 +61,10 @@ public class CityDetailFragment extends Fragment {
     }
 
     /**
-     *
-     * @param inflater
-     * @param container
-     * @param savedInstanceState
+     * Builds our detail screen by setting the city data
+     * @param inflater used to inflate our views
+     * @param container passwed tot he inflater method
+     * @param savedInstanceState Not Used
      * @return
      */
     @Override
