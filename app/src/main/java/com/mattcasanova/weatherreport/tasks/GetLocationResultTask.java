@@ -55,6 +55,7 @@ public class GetLocationResultTask extends BaseGetCitiesTask {
             //Check to make sure we got a good result from the API
             JSONObject root = new JSONObject(resultBuilder.toString());
             if (root.has(RESULT_CODE) && root.getInt(RESULT_CODE) != CODE_GOOD) {
+                errorString = API_ERROR;
                 return cities;
             }
 

@@ -39,6 +39,7 @@ abstract class BaseGetCitiesTask extends AsyncTask<Void, String, List<City> > {
     static final String CNT                   = "cnt";
     static final String LIST                  = "list";
 
+    static final String API_ERROR             = "There was an error communicating with the API.  Please try again later.";
     static final String URL_ERROR             = "There was an error parsing the URL. Please contact support: mcass99@gmail.com";
     static final String IO_ERROR              = "There was a problem with the connection.  Please try again.";
     static final String JSON_ERROR            = "The parsing the JSON. Please contact support: mcass99@gmail.com";
@@ -85,6 +86,7 @@ abstract class BaseGetCitiesTask extends AsyncTask<Void, String, List<City> > {
             //Check to make sure we got a good result from the API
             JSONObject root = new JSONObject(resultBuilder.toString());
             if (root.has(RESULT_CODE) && root.getInt(RESULT_CODE) != CODE_GOOD) {
+                errorString = API_ERROR;
                 return cities;
             }
 
