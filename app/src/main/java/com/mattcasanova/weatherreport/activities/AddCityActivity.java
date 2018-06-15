@@ -1,6 +1,7 @@
 package com.mattcasanova.weatherreport.activities;
 
 import android.content.Intent;
+import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,9 @@ import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.mattcasanova.weatherreport.R;
 import com.mattcasanova.weatherreport.Utility.Alerts;
 import com.mattcasanova.weatherreport.controllers.AddController;
@@ -23,7 +28,8 @@ import com.mattcasanova.weatherreport.models.City;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AddCityActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, AddViewInterface{
+public class AddCityActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, AddViewInterface, OnSuccessListener<Location> {
+    private FusedLocationProviderClient locationClient;
     private AddController controller;
     private List<City>    cities;
     private NameAdapter   nameAdapter;
@@ -58,6 +64,8 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
         progressBar.setVisibility(View.GONE);
         searchBar.setOnQueryTextListener(this);
         controller = new AddController(this);
+
+        locationClient = LocationServices.getFusedLocationProviderClient(this);
     }
 
     /**
@@ -115,6 +123,20 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
         String title       = getString(R.string.title_error);
         String buttonTitle = getString(R.string.button_ok);
         Alerts.NoOptionAlert(title, errorMessage, buttonTitle, this);
+    }
+
+    /**
+     * On Success of getting the last known location
+     * @param location The last known location of the d
+     */
+    @Override
+    public void onSuccess(Location location) {
+        if(location != null) {
+            double longitude = location.getLongitude();
+            double latitude  = location.getLatitude();
+
+            Log.d("Location", String.format("onSuccess: %f %f", longitude, latitude));
+        }
     }
 
     /**
@@ -182,7 +204,8 @@ public class AddCityActivity extends AppCompatActivity implements SearchView.OnQ
 
             /**
              * We allow the viewholder to handle the click because it knows its own position
-             * @param view
+             * @param view The view that was clicked
+             *
              */
             @Override
             public void onClick(View view) {
